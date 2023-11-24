@@ -30,7 +30,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Application definition
-
+PAYPAL_TEST = True
+PAYPAL_RECEIVER_EMAIL = 'theanhmgt66@gmail.com'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'oauth2_provider',
     'cloudinary',
-    'corsheaders'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -147,5 +148,5 @@ cloudinary.config(
     secure=True
 )
 
-CLIENT_ID = "4w9ls9kEx6enZBCXGifCTKppnq9LsfjkL4Lbgld0"
-CLIENT_SECRET = "FyphQ2dUqKYm4N8iz3KEliNi6h9g7TTHM2e8jSBtkBzO08nVotmUXZjKbETcskBFDyAwd9HnTBFNoX2mfZSZwsJ0BjiHqzze5oDU3vlyurpylauyFqknUj4OaMUB1DQL"
+CLIENT_ID = "jR0H8JNABDdmB4VpXmxGxl9MJrhy8yXOvi44jjir"
+CLIENT_SECRET = "c6AIO0OZdC67VqWFq10JlXyS2hmt8XOovQI1BTxGmt8bN2IuULkRyBfA5A9SNHJr7NBleqdHEcOn0S5TEmNNWDjLppgK9fx2nVEmuRUuVIWVit9yJzyhBZsDGnIXUxrP"

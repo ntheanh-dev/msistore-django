@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Product, Category, Brand, Image
+from .models import User, Product, Category, Brand, Image, Like, UserInfo, Order, OrderItem, StatusOrder
 from cloudinary.uploader import upload
 
 
@@ -63,7 +63,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Image
-        fields = ['id', 'file', 'product','url', 'preview']
+        fields = ['id', 'file', 'product', 'url', 'preview']
         extra_kwargs = {
             'file': {'write_only': True},
         }
@@ -92,10 +92,46 @@ class ProductSerializer(serializers.ModelSerializer):
         i = Image.objects.filter(product=obj).values()
         urls = []
         for data in i:
-            urls.append(request.build_absolute_uri(data['file']))
+            if data['preview']:
+                urls.insert(0, data['file'])
+            else:
+                urls.append(request.build_absolute_uri(data['file']))
         if request:
             return urls
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'detail', 'old_price', 'new_price', 'category', 'brand', 'images']
+        fields = ['id', 'name', 'description', 'detail', 'old_price', 'new_price', 'category', 'brand', 'images',
+                  'is_active']
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['id', 'user', 'product']
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserInfo
+        fields = ['country', 'city', 'street', 'home_number', 'phone_number', 'user']
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()
+    class Meta:
+        model = OrderItem
+        fields = '__all__'
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['user', 'created_at', 'uuid', 'products',]
+
+
+class StatusOrderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StatusOrder
+        fields = '__all__'

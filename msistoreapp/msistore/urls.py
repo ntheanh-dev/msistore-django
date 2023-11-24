@@ -7,9 +7,12 @@ r = routers.DefaultRouter()
 r.register('users', views.UserViewSet)
 r.register('category', views.CategoryViewSet)
 r.register('brand', views.BrandViewSet)
-r.register('product', views.ProductViewSet)
+r.register('products', views.ProductViewSet)
 r.register('image', views.ImageViewSet)
-
+r.register('userinfo', views.UserInfoViewSet)
+r.register('order', views.OrderViewSet)
+r.register('order-item', views.OrderItemViewSet)
+r.register('status-order', views.StatusOrderViewSet)
 
 urlpatterns = [
     path('', include(r.urls))

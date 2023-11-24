@@ -1,12 +1,18 @@
 from django.http import Http404
 from django.shortcuts import render
-from rest_framework import viewsets, generics, permissions, parsers
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from rest_framework import viewsets, generics, permissions, parsers, status
 from rest_framework.decorators import action
 from rest_framework.views import Response
-from .models import User, Category, Brand, Image, Product
+from .models import User, Category, Brand, Image, Product, Like, UserInfo, Order, OrderItem, StatusOrder
+from .pagination import CustomPagination
 from .serializers import (
-    UserSerializer, CategorySerializer, BrandSerializer, ImageSerializer, ProductSerializer
+    UserSerializer, CategorySerializer, BrandSerializer, ImageSerializer, ProductSerializer, LikeSerializer,
+    UserInfoSerializer, OrderSerializer, OrderItemSerializer, StatusOrderSerializer
 )
+import json
+from .perms import UserInfoOwner
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
@@ -15,13 +21,12 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     parser_classes = [parsers.MultiPartParser, ]
 
     def get_permissions(self):
-        if self.action in ['current_user']:
+        if self.action in ['current_user', 'change_password']:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     @action(methods=['get', 'put'], detail=False, url_path='current-user')
     def current_user(self, request):
-        print(request.user)
         u = request.user
         if request.method.__eq__('PUT'):
             for k, v in request.data.items():
@@ -30,11 +35,53 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
 
         return Response(UserSerializer(u, context={'request': request}).data)
 
+    @action(methods=['post'], detail=False, url_path='change-password')
+    def change_password(self, request):
+        user = request.user
+        old_password = request.data['old_password']
+        print(old_password)
+        new_password = request.data['new_password']
+        if user.check_password(old_password):
+            return Response({"errors": "old_password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user.set_password(new_password)
+            user.save()
+            return Response(UserSerializer(user, context={'request': request}).data)
 
-class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
+
+class ProductViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.UpdateAPIView,
+                     generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    pagination_class = CustomPagination
 
+    def list(self, request, *args, **kwargs):
+        # Get the custom limit from the query parameter or use a default
+        limit = int(request.query_params.get('limit', 100))
+        # Retrieve the queryset
+        queryset = self.filter_queryset(self.get_queryset())
+        kw = request.query_params.get('kw')
+        cateId = request.query_params.get('cateId')
+        fromPrice = request.query_params.get('fromPrice')
+        toPrice = request.query_params.get('toPrice')
+
+        if kw:
+            queryset =queryset.filter(name__contains=kw, description__contains=kw)
+        if cateId:
+            queryset = queryset.filter(category_id=cateId)
+        if fromPrice and toPrice:
+            queryset = queryset.filter(new_price__range=(fromPrice,toPrice))
+        # if fromPrice = queryset.filter(category_id= )
+        # Apply pagination
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.get_paginated_response(serializer.data).data
+            response_data['limit'] = limit  # Add the custom limit to the response
+            return Response(response_data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.RetrieveAPIView):
@@ -47,6 +94,136 @@ class BrandViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIVie
     serializer_class = BrandSerializer
 
 
-class ImageViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
+class ImageViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
+
+
+class LikeViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+
+class UserInfoViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView, generics.CreateAPIView,
+                      generics.RetrieveAPIView, generics.RetrieveUpdateAPIView):
+    queryset = UserInfo.objects.all()
+    serializer_class = UserInfoSerializer
+    # permission_classes = [UserInfoOwner, ]
+
+
+class OrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView, generics.CreateAPIView,
+                   generics.RetrieveAPIView, generics.RetrieveUpdateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    # permission_classes = [permissions.IsAuthenticated]
+
+    @action(methods=['post'], detail=False, url_path='create')
+    def create_order(self, request):
+        # Deserialize the request data
+        order_items_data = request.data.get('order_items')
+        order_status_data = request.data.get('order_status')
+
+        order_items_data_dict = json.loads(order_items_data)
+        order_status_data_dict = json.loads(order_status_data)
+
+        user = request.user
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # # Serialize and save the Order
+            order_data = {'user': user.id}
+            order_serializer = OrderSerializer(data=order_data)
+            if (order_serializer.is_valid()):
+                order_instance = order_serializer.save()
+                for item_data in order_items_data_dict:
+                    OrderItem.objects.create(
+                        order_id=order_instance.id,
+                        product_id=item_data['id'],
+                        quantity=item_data['cartQuantity']
+                        # Thêm các trường khác của OrderItem tùy thuộc vào mô hình của bạn
+                    )
+                # Create and save StatusOrder associated with the Order
+                StatusOrder.objects.create(
+                    order=order_instance,
+                    is_paid=order_status_data_dict['is_paid'],
+                    delivery_method=order_status_data_dict['delivery_method'],
+                    payment_method=order_status_data_dict['payment_method'],
+                    delivery_stage=order_status_data_dict['delivery_stage']
+                    # Thêm các trường khác của StatusOrder tùy thuộc vào mô hình của bạn
+                )
+                return Response(order_instance.uuid,
+                                status=status.HTTP_201_CREATED)
+            else:
+                return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['get'], detail=False, url_path='payment')
+    def getPaypalClient(self, request):
+        data = {
+            'client_id': 'AUf3F8kr7ESOkbT2yMPYGFsFkwMRKLYppdSojKSZwA05V_d22OM2175iiBDwLit777i22xY1wCs7BL0C',
+            'client_secret': 'EHjvQszXeEKpu01L99u3gIhYr8SgYnBUjtxkEGI1Z5MLt3nEHNkkAkHRnvuzPT4vgPAK3k9Cogha1xuV'
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(methods=['post', 'get'], detail=False, url_path='get-receipt')
+    def get_receipt(self, request):
+        if request.method.__eq__('GET'):
+            user = request.user
+            orders = Order.objects.filter(user_id=user.id)
+            receipts = []
+            for o in orders:
+                o_serializer = OrderSerializer(o, context={'request': request})
+                ord = o_serializer.data
+                products = []
+
+                order_items = OrderItem.objects.filter(order_id=o.id)
+                for data in order_items.values():
+                    p = Product.objects.get(pk=data['product_id'])
+                    prod = ProductSerializer(p, context={'request': request})
+                    data['product'] = prod.data
+                    products.append(data)
+
+                s = StatusOrder.objects.get(order_id=o.id)
+                status_serializer = StatusOrderSerializer(s, context={'request': request})
+                status_order = status_serializer.data
+
+                receipts.append({
+                    'order': ord,
+                    'order_items': products,
+                    'status': status_order
+                })
+            return Response(receipts, status=status.HTTP_200_OK)
+        else:
+            uuid = request.data
+            order = Order.objects.filter(uuid=uuid)
+            products = []
+            status_order = None
+            if order.exists():
+                order_instance = order.values()[0]
+                order_items = OrderItem.objects.filter(order_id=order_instance['id'])
+                for data in order_items.values():
+                    p = Product.objects.get(pk=data['product_id'])
+                    prod = ProductSerializer(p, context={'request': request})
+                    data['product'] = prod.data
+                    products.append(data)
+                s = StatusOrder.objects.get(order_id=order_instance['id'])
+                status_serializer = StatusOrderSerializer(s, context={'request': request})
+                status_order = status_serializer.data
+            receipt = {
+                'order': order.values()[0],
+                'order_items': products,
+                'status': status_order
+            }
+            return Response(receipt, status=status.HTTP_200_OK)
+
+
+class OrderItemViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView, generics.CreateAPIView,
+                       generics.RetrieveAPIView, generics.RetrieveUpdateAPIView):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
+
+
+class StatusOrderViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView, generics.CreateAPIView,
+                         generics.RetrieveAPIView, generics.RetrieveUpdateAPIView):
+    queryset = StatusOrder.objects.all()
+    serializer_class = StatusOrderSerializer

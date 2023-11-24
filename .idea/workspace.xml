@@ -5,13 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70a34503-6d7a-47ad-8bee-765f9f1ac9c0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/msistoreapp/msistore/serializers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/msistoreapp/msistore/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/msistoreapp/msistore/pagination.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/msistoreapp/msistore/perms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/msistoreapp/avatar/avata.jpg" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/msistoreapp/msistore/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/msistoreapp/msistore/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/msistoreapp/msistore/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/msistoreapp/msistore/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/msistoreapp/msistore/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/msistoreapp/msistore/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/msistoreapp/msistore/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/msistoreapp/msistore/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/msistoreapp/msistore/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/msistoreapp/msistore/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/msistoreapp/msistoreapp/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/msistoreapp/msistoreapp/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/msistoreapp/msistoreapp/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/msistoreapp/msistoreapp/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,5 +70,88 @@
       <updated>1699021143868</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="c06791d8-8ebf-425b-afe9-73c1708c9a8a" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="main" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ID_WIDTH">
+                <map>
+                  <entry key="Table.Default.Author.ColumnIdWidth" value="121" />
+                  <entry key="Table.Default.Date.ColumnIdWidth" value="127" />
+                  <entry key="Table.Space.CommitStatus.ColumnIdWidth" value="127" />
+                </map>
+              </option>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="c06791d8-8ebf-425b-afe9-73c1708c9a8a">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/msistoreapp/msistore/serializers.py</url>
+          <line>43</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/msistoreapp/msistoreapp/urls.py</url>
+          <line>16</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
