@@ -155,22 +155,38 @@ class OrderViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAP
         }
         return Response(data, status=status.HTTP_200_OK)
 
-    @action(methods=['post'], detail=False, url_path='get-receipt')
+    @action(methods=['post', 'get'], detail=False, url_path='get-receipt')
     def get_receipt(self, request):
         user = request.user
-        uuid = json.loads(request.data.get('uuid'))
-        order = Order.objects.filter(uuid=uuid).prefetch_related('order_item_order', 'status_order').first()
-        order_data = OrderSerializer(order).data
+        if request.method.__eq__('POST'):
+            uuid = json.loads(request.data.get('uuid'))
+            order = Order.objects.filter(uuid=uuid).prefetch_related('order_item_order', 'status_order').first()
+            order_data = OrderSerializer(order).data
+            print('test')
+            order_items = [items for items in order.order_item_order.all()]
+            order_items_data = OrderItemSerializer(order_items, many=True, context={'request': request}).data
 
-        order_items = [items for items in order.order_item_order.all()]
-        order_items_data = OrderItemSerializer(order_items, many=True, context={'request': request}).data
+            status_order = [status_order for status_order in order.status_order.all()]
+            status_order_data = StatusOrderSerializer(status_order[0]).data
 
-        status_order = [status_order for status_order in order.status_order.all()]
-        status_order_data = StatusOrderSerializer(status_order[0]).data
+            recepit = {'order': order_data, 'order_items': order_items_data, 'status': status_order_data}
 
-        recepit = {'order': order_data, 'order_items': order_items_data, 'status': status_order_data}
+            return HttpResponse(json.dumps(recepit), status=status.HTTP_200_OK)
+        else:
+            recepit = []
+            orders = Order.objects.filter(user_id=user.id).prefetch_related('order_item_order', 'status_order')
+            order_data = OrderSerializer(orders, many=True).data
 
-        return HttpResponse(json.dumps(recepit), status=status.HTTP_200_OK)
+            for i in range(len(order_data)):
+                order_items = [items for items in orders[i].order_item_order.all()]
+                order_items_data = OrderItemSerializer(order_items, many=True, context={'request': request}).data
+
+                status_order = [status_order for status_order in orders[i].status_order.all()]
+                status_order_data = StatusOrderSerializer(status_order[0]).data
+
+                recepit.append({'order': order_data[i], 'order_items': order_items_data, 'status': status_order_data})
+
+            return HttpResponse(json.dumps(recepit), status=status.HTTP_200_OK)
 
     # if request.method.__eq__('GET'):
     #     user = request.user
