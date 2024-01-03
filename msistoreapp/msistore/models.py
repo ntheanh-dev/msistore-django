@@ -75,6 +75,7 @@ class Image(models.Model):
     def __str__(self):
         return self.product
 
+
 class Like(models.Model):
     user = models.ForeignKey(UserInfo, on_delete=models.CASCADE, related_name="like_user")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="like_product")
@@ -90,13 +91,13 @@ class Order(BaseModel):
 
 
 class OrderItem(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product,related_name="order_item_prd", on_delete=models.CASCADE)
+    order = models.ForeignKey(Order,related_name="order_item_order", on_delete=models.CASCADE)
     quantity = models.CharField(max_length=3)
 
 
 class StatusOrder(BaseModel):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order,related_name="status_order", on_delete=models.CASCADE)
     is_paid = models.BooleanField(default=False)
     delivery_method = models.CharField(max_length=50)
     delivery_stage = models.CharField(max_length=50)

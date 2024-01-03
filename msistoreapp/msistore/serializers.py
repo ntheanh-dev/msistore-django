@@ -5,7 +5,6 @@ from cloudinary.uploader import upload
 
 class UserSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField(source='avatar')
-
     def get_image(self, user):
         if user.avatar:
             request = self.context.get('request')
@@ -34,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username', 'password', 'image', 'avatar', 'email']
+        fields = ['id', 'first_name', 'last_name', 'username', 'password', 'image', 'avatar', 'email',]
         extra_kwargs = {
             'password': {'write_only': True},
             'avatar': {'write_only': True},
@@ -127,7 +126,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['user', 'created_at', 'uuid', 'products',]
+        fields = '__all__'
 
 
 class StatusOrderSerializer(serializers.ModelSerializer):
