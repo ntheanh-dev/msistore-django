@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'cloudinary',
     'corsheaders',
+    'drf_yasg',
 ]
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -140,7 +140,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # MEDIA_ROOT = '%s/msistore/static/' % BASE_DIR
-
+import _locale
+_locale._getdefaultlocale = (lambda *args: ['en_US', 'utf8'])
 cloudinary.config(
     cloud_name="dqpo9h5s2",
     api_key="247473939561997",

@@ -80,7 +80,6 @@ class Like(models.Model):
     user = models.ForeignKey(UserInfo, on_delete=models.CASCADE, related_name="like_user")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="like_product")
 
-
 class Order(BaseModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(UserInfo, on_delete=models.SET_NULL, null=True)
